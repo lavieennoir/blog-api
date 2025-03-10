@@ -7,6 +7,7 @@ import userRoutes from './routes/user.routes';
 import postRoutes from './routes/post.routes';
 import { LoggerService } from './services/logger.service';
 import { setupErrorHandlers, startServer } from './utils/server.utils';
+import swaggerRouter from './docs/swagger';
 
 dotenv.config();
 
@@ -16,8 +17,12 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/v1/users', userRoutes);
-app.use('/v1/posts', postRoutes);
+app.use(userRoutes.basePath, userRoutes.router);
+app.use(postRoutes.basePath, postRoutes.router);
+
+// API Documentation
+// should be added after all routes to register them properly
+app.use(swaggerRouter.basePath, swaggerRouter.generateRouter());
 
 // Get dependencies from container
 const prisma = container.resolve(PrismaClient);

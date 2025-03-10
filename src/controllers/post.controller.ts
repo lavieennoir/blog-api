@@ -13,9 +13,7 @@ interface AuthRequest extends Request {
 
 @injectable()
 export class PostController {
-  constructor(
-    @inject(PostService) private readonly postService: PostService
-  ) {}
+  constructor(@inject(PostService) private readonly postService: PostService) {}
 
   async createPost(req: AuthRequest, res: Response) {
     try {
@@ -23,10 +21,15 @@ export class PostController {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
+      // TODO: add zod validation as middleware
       const validatedData = createPostSchema.parse(req.body);
-      const post = await this.postService.createPost(req.user.id, validatedData);
+      const post = await this.postService.createPost(
+        req.user.id,
+        validatedData
+      );
       res.status(201).json(post);
     } catch (error) {
+      // TODO: move try catch to globabl error handler middleware
       if (error instanceof Error) {
         res.status(400).json({ message: error.message });
       } else {
@@ -43,7 +46,11 @@ export class PostController {
 
       const postId = req.params.id;
       const validatedData = updatePostSchema.parse(req.body);
-      const post = await this.postService.updatePost(postId, req.user.id, validatedData);
+      const post = await this.postService.updatePost(
+        postId,
+        req.user.id,
+        validatedData
+      );
       res.json(post);
     } catch (error) {
       if (error instanceof Error) {
@@ -95,4 +102,4 @@ export class PostController {
       }
     }
   }
-} 
+}
