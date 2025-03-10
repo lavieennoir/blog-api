@@ -3,9 +3,9 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { LoggerService } from '../services/logger.service';
 import { Express } from 'express';
 const FATAL_ERROR_CODES = new Set([
-  'EADDRINUSE',  // Port already in use
-  'EACCES',      // Permission denied
-  'ECONNREFUSED' // Database connection refused
+  'EADDRINUSE', // Port already in use
+  'EACCES', // Permission denied
+  'ECONNREFUSED', // Database connection refused
 ]);
 
 const isFatalError = (error: Error): boolean => {
@@ -23,7 +23,11 @@ const isFatalError = (error: Error): boolean => {
   );
 };
 
-const createServerShutdown = (server: Server, prisma: PrismaClient, logger: LoggerService) => {
+const createServerShutdown = (
+  server: Server,
+  prisma: PrismaClient,
+  logger: LoggerService
+) => {
   return async () => {
     logger.info('Received shutdown signal');
 
@@ -51,7 +55,7 @@ const createServerShutdown = (server: Server, prisma: PrismaClient, logger: Logg
 };
 
 export const setupErrorHandlers = (
-  server: Server, 
+  server: Server,
   prisma: PrismaClient,
   logger: LoggerService
 ): void => {
@@ -63,16 +67,16 @@ export const setupErrorHandlers = (
 
   // Handle uncaught exceptions
   process.on('uncaughtException', (error: Error) => {
-    logger.error('Uncaught Exception:', { 
+    logger.error('Uncaught Exception:', {
       error,
       stack: error.stack,
       metadata: {
         type: error.name,
         code: 'code' in error ? error.code : undefined,
-        isFatal: isFatalError(error)
-      }
+        isFatal: isFatalError(error),
+      },
     });
-    
+
     // Only shutdown for fatal errors
     if (isFatalError(error)) {
       logger.error('Fatal error detected, initiating shutdown');
@@ -85,16 +89,16 @@ export const setupErrorHandlers = (
   // Handle unhandled promise rejections
   process.on('unhandledRejection', (reason, promise) => {
     const error = reason instanceof Error ? reason : new Error(String(reason));
-    
-    logger.error('Unhandled Rejection:', { 
+
+    logger.error('Unhandled Rejection:', {
       error,
       promise,
       stack: error.stack,
       metadata: {
         type: error.name,
         code: 'code' in error ? error.code : undefined,
-        isFatal: isFatalError(error)
-      }
+        isFatal: isFatalError(error),
+      },
     });
 
     // Convert to uncaught exception to handle it in the same way
@@ -103,13 +107,13 @@ export const setupErrorHandlers = (
 
   // Handle server startup errors
   server.on('error', (error: Error) => {
-    logger.error('Error starting server:', { 
+    logger.error('Error starting server:', {
       error,
       stack: error.stack,
       metadata: {
         type: error.name,
-        code: 'code' in error ? error.code : undefined
-      }
+        code: 'code' in error ? error.code : undefined,
+      },
     });
     // Server startup errors are always fatal
     process.exit(1);
@@ -120,6 +124,6 @@ export const startServer = (app: Express, logger: LoggerService) => {
   const port = process.env.PORT || 3000;
   return app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
+    logger.info(`API Documentation: ${process.env.BASE_URL}/v1/docs`);
   });
 };
-

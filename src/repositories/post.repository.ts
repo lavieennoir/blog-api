@@ -4,10 +4,22 @@ import { BaseRepository } from './base.repository';
 
 @injectable()
 export class PostRepository extends BaseRepository {
+  public readonly defaultInclude = {
+    author: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    },
+    tags: true,
+  } as const;
+
   constructor(@inject(PrismaClient) prisma: PrismaClient) {
     super(prisma);
   }
 
+  // TODO: refactor interfaces
   async create(data: {
     title: string;
     content: string;
@@ -30,16 +42,7 @@ export class PostRepository extends BaseRepository {
           })),
         },
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        tags: true,
-      },
+      include: this.defaultInclude,
     });
   }
 
@@ -68,16 +71,7 @@ export class PostRepository extends BaseRepository {
             }
           : undefined,
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        tags: true,
-      },
+      include: this.defaultInclude,
     });
   }
 
@@ -96,38 +90,23 @@ export class PostRepository extends BaseRepository {
   async findMany(params: { authorId?: string }): Promise<Post[]> {
     return this.getPrisma().post.findMany({
       where: params.authorId ? { authorId: params.authorId } : undefined,
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        tags: true,
-      },
+      include: this.defaultInclude,
       orderBy: {
         createdAt: 'desc',
       },
     });
   }
 
-  async findByIdWithAuthorAndTags(id: string): Promise<Post & {
-    author: { id: string; name: string; email: string };
-    tags: { id: string; name: string }[];
-  } | null> {
+  async findByIdWithAuthorAndTags(id: string): Promise<
+    | (Post & {
+        author: { id: string; name: string; email: string };
+        tags: { id: string; name: string }[];
+      })
+    | null
+  > {
     return this.getPrisma().post.findUnique({
       where: { id },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        tags: true,
-      },
+      include: this.defaultInclude,
     });
   }
-} 
+}
