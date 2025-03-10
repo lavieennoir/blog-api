@@ -7,8 +7,12 @@ export class UserRepository extends BaseRepository {
   constructor(@inject(PrismaClient) prisma: PrismaClient) {
     super(prisma);
   }
-  
-  async create(data: { email: string; name: string; password: string }): Promise<User> {
+
+  async create(data: {
+    email: string;
+    name: string;
+    password: string;
+  }): Promise<User> {
     return this.getPrisma().user.create({
       data,
     });
@@ -19,4 +23,4 @@ export class UserRepository extends BaseRepository {
       where: { email },
     });
   }
-} 
+}

@@ -8,6 +8,8 @@ import postRoutes from './routes/post.routes';
 import { LoggerService } from './services/logger.service';
 import { setupErrorHandlers, startServer } from './utils/server.utils';
 import swaggerRouter from './docs/swagger';
+import { createErrorHandler } from './middleware/error.middleware';
+import { notFoundHandler } from './middleware/not-found.middleware';
 
 dotenv.config();
 
@@ -24,9 +26,15 @@ app.use(postRoutes.basePath, postRoutes.router);
 // should be added after all routes to register them properly
 app.use(swaggerRouter.basePath, swaggerRouter.generateRouter());
 
+// 404 handler
+app.use(notFoundHandler);
+
 // Get dependencies from container
 const prisma = container.resolve(PrismaClient);
 const logger = container.resolve(LoggerService);
+
+// Error handling middleware should be last
+app.use(createErrorHandler(logger));
 
 const server = startServer(app, logger);
 // Setup error handlers with all required dependencies

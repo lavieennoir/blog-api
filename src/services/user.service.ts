@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { CreateUserInput, LoginUserInput } from '../schemas/user.schema';
 import { UserRepository } from '../repositories/user.repository';
 import { inject, injectable } from 'tsyringe';
+import { AppError } from '../middleware/error.middleware';
 
 @injectable()
 export class UserService {
@@ -11,8 +12,14 @@ export class UserService {
   ) {}
 
   async createUser(input: CreateUserInput) {
+    const existingUser = await this.userRepository.findByEmail(input.email);
+
+    if (existingUser) {
+      throw new AppError('Email already registered');
+    }
+
     const hashedPassword = await bcrypt.hash(input.password, 10);
-    
+
     const user = await this.userRepository.create({
       ...input,
       password: hashedPassword,
@@ -26,13 +33,13 @@ export class UserService {
     const user = await this.userRepository.findByEmail(input.email);
 
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new AppError('Invalid credentials', 401);
     }
 
     const isValidPassword = await bcrypt.compare(input.password, user.password);
 
     if (!isValidPassword) {
-      throw new Error('Invalid credentials');
+      throw new AppError('Invalid credentials', 401);
     }
 
     const token = jwt.sign(
@@ -44,4 +51,4 @@ export class UserService {
     const { password, ...userWithoutPassword } = user;
     return { user: userWithoutPassword, token };
   }
-} 
+}

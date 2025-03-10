@@ -12,7 +12,12 @@ export class PostRepository extends BaseRepository {
         email: true,
       },
     },
-    tags: true,
+    tags: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
   } as const;
 
   constructor(@inject(PrismaClient) prisma: PrismaClient) {

@@ -17,37 +17,39 @@ export class LoggerService {
       defaultMeta: { service: 'blog-api' },
       transports: [
         // Write only error level logs to 'error.log'
-        new winston.transports.File({ 
-          filename: 'logs/error.log', 
+        new winston.transports.File({
+          filename: 'logs/error.log',
           level: 'error',
           dirname: 'logs',
           maxsize: 10485760, // 10MB
           maxFiles: 5,
         }),
         // Write all logs (error, warn, info, etc) to 'combined.log'
-        new winston.transports.File({ 
+        new winston.transports.File({
           filename: 'logs/combined.log',
           dirname: 'logs',
           maxsize: 10485760, // 10MB
           maxFiles: 5,
-        })
-      ]
+        }),
+      ],
     });
 
     // If we're not in production, log to the console with custom format
     if (process.env.NODE_ENV !== 'production') {
-      this.logger.add(new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.colorize(),
-          winston.format.printf(({ timestamp, level, message, stack }) => {
-            if (stack) {
-              return `${timestamp} ${level}: ${message}\n${stack}`;
-            }
-            return `${timestamp} ${level}: ${message}`;
-          })
-        )
-      }));
+      this.logger.add(
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.colorize(),
+            winston.format.printf(({ timestamp, level, message, stack }) => {
+              if (stack) {
+                return `${timestamp} ${level}: ${message}\n${stack}`;
+              }
+              return `${timestamp} ${level}: ${message}`;
+            })
+          ),
+        })
+      );
     }
   }
 
@@ -66,4 +68,4 @@ export class LoggerService {
   debug(message: string, meta?: Record<string, unknown>): void {
     this.logger.debug(message, meta);
   }
-} 
+}

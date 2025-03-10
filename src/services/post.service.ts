@@ -1,6 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { CreatePostInput, UpdatePostInput } from '../schemas/post.schema';
 import { PostRepository } from '../repositories/post.repository';
+import { AppError } from '../middleware/error.middleware';
 
 @injectable()
 export class PostService {
@@ -19,7 +20,10 @@ export class PostService {
     const post = await this.postRepository.findById(postId);
 
     if (!post || post.authorId !== authorId) {
-      throw new Error('Post not found or unauthorized');
+      throw new AppError(
+        'Post not found or you do not have permission to update it',
+        404
+      );
     }
 
     return this.postRepository.update(postId, input);
@@ -29,7 +33,10 @@ export class PostService {
     const post = await this.postRepository.findById(postId);
 
     if (!post || post.authorId !== authorId) {
-      throw new Error('Post not found or unauthorized');
+      throw new AppError(
+        'Post not found or you do not have permission to delete it',
+        404
+      );
     }
 
     return this.postRepository.delete(postId);
@@ -43,9 +50,9 @@ export class PostService {
     const post = await this.postRepository.findByIdWithAuthorAndTags(postId);
 
     if (!post) {
-      throw new Error('Post not found');
+      throw new AppError('Post not found', 404);
     }
 
     return post;
   }
-} 
+}

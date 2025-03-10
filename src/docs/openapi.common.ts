@@ -48,4 +48,5 @@ export const commonOpenApiNodes = {
       },
     },
   }),
+  bearerAuthSecurity: [{ bearerAuth: [] }],
 };

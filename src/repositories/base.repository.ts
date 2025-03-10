@@ -6,4 +6,4 @@ export abstract class BaseRepository {
   getPrisma(): PrismaClient {
     return this.prisma;
   }
-} 
+}

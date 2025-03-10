@@ -2,6 +2,8 @@ import { Server } from 'http';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { LoggerService } from '../services/logger.service';
 import { Express } from 'express';
+import swaggerRouter from '../docs/swagger';
+
 const FATAL_ERROR_CODES = new Set([
   'EADDRINUSE', // Port already in use
   'EACCES', // Permission denied
@@ -124,6 +126,8 @@ export const startServer = (app: Express, logger: LoggerService) => {
   const port = process.env.PORT || 3000;
   return app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
-    logger.info(`API Documentation: ${process.env.BASE_URL}/v1/docs`);
+    logger.info(
+      `API Documentation: ${process.env.BASE_URL}${swaggerRouter.basePath}`
+    );
   });
 };

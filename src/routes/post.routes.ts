@@ -1,8 +1,8 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { PostController } from '../controllers/post.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { container } from '../config/di.config';
-import { z } from 'zod';
 import { openApiRegistry } from '../docs/openapi.registry';
 import {
   createPostSchema,
@@ -10,23 +10,31 @@ import {
   updatePostSchema,
 } from '../schemas/post.schema';
 import { commonOpenApiNodes } from '../docs/openapi.common';
+import { validateBody } from '../middleware/validation.middleware';
+import { handleExceptions } from '../utils/controller-error.utils';
 
 export const router = Router();
 const postController = container.resolve(PostController);
 
 // Register routes
-router.get('/', postController.getPosts.bind(postController));
-router.get('/:id', postController.getPost.bind(postController));
-router.post('/', authenticate, postController.createPost.bind(postController));
+router.get('/', handleExceptions(postController.getPosts));
+router.get('/:id', handleExceptions(postController.getPost));
+router.post(
+  '/',
+  authenticate,
+  validateBody(createPostSchema),
+  handleExceptions(postController.createPost)
+);
 router.put(
   '/:id',
   authenticate,
-  postController.updatePost.bind(postController)
+  validateBody(updatePostSchema),
+  handleExceptions(postController.updatePost)
 );
 router.delete(
   '/:id',
   authenticate,
-  postController.deletePost.bind(postController)
+  handleExceptions(postController.deletePost)
 );
 
 // Describe API for registered routes
@@ -56,6 +64,7 @@ openApiRegistry.registerPath({
   method: 'post',
   path: basePath,
   description: 'Create a new post',
+  security: commonOpenApiNodes.bearerAuthSecurity,
   request: commonOpenApiNodes.requestWithJsonBody(createPostSchema),
   responses: {
     201: commonOpenApiNodes.jsonResponse(
@@ -71,6 +80,7 @@ openApiRegistry.registerPath({
   method: 'put',
   path: `${basePath}/{id}`,
   description: 'Update a post',
+  security: commonOpenApiNodes.bearerAuthSecurity,
   request: {
     ...commonOpenApiNodes.requestWithIdParam,
     ...commonOpenApiNodes.requestWithJsonBody(updatePostSchema),
@@ -89,6 +99,7 @@ openApiRegistry.registerPath({
   method: 'delete',
   path: `${basePath}/{id}`,
   description: 'Delete a post',
+  security: commonOpenApiNodes.bearerAuthSecurity,
   request: commonOpenApiNodes.requestWithIdParam,
   responses: {
     204: {
