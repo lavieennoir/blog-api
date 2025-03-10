@@ -27,6 +27,14 @@ export const commonOpenApiNodes = {
       },
     },
   },
+  rateLimitResponse: {
+    description: 'Rate limit exceeded',
+    content: {
+      'application/json': {
+        schema: errorResponseSchema,
+      },
+    },
+  },
   requestWithIdParam: {
     params: z.object({
       id: z.string().uuid(),

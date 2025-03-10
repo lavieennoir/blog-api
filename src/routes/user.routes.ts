@@ -10,6 +10,10 @@ import { validateBody } from '../middleware/validation.middleware';
 import { openApiRegistry } from '../docs/openapi.registry';
 import { commonOpenApiNodes } from '../docs/openapi.common';
 import { handleExceptions } from '../utils/controller-error.utils';
+import {
+  signInLimiter,
+  signUpLimiter,
+} from '../middleware/rate-limit.middleware';
 
 export const router = Router();
 const userController = container.resolve(UserController);
@@ -17,11 +21,13 @@ const userController = container.resolve(UserController);
 // Register routes
 router.post(
   '/signup',
+  signUpLimiter,
   validateBody(createUserSchema),
   handleExceptions(userController.signUp)
 );
 router.post(
   '/signin',
+  signInLimiter,
   validateBody(loginUserSchema),
   handleExceptions(userController.signIn)
 );
@@ -40,6 +46,7 @@ openApiRegistry.registerPath({
       'User registered successfully'
     ),
     400: commonOpenApiNodes.badRequestResponse,
+    429: commonOpenApiNodes.rateLimitResponse,
   },
 });
 
@@ -54,6 +61,7 @@ openApiRegistry.registerPath({
       'User logged in successfully'
     ),
     400: commonOpenApiNodes.badRequestResponse,
+    429: commonOpenApiNodes.rateLimitResponse,
   },
 });
 
