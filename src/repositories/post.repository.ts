@@ -56,15 +56,15 @@ export class PostRepository extends BaseRepository {
       where: { id },
       data: {
         ...postData,
-        tags: tags
-          ? {
-              set: [],
-              connectOrCreate: tags.map((name) => ({
-                where: { name },
-                create: { name },
-              })),
-            }
-          : undefined,
+        ...(tags && {
+          tags: {
+            set: [],
+            connectOrCreate: tags.map((name) => ({
+              where: { name },
+              create: { name },
+            })),
+          },
+        }),
       },
       include: this.defaultInclude,
     });

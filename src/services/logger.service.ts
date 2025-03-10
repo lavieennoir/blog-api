@@ -13,8 +13,7 @@ export class LoggerService {
         winston.format.errors({ stack: true }),
         winston.format.json()
       ),
-      // TODO: Add service name to environment variable
-      defaultMeta: { service: 'blog-api' },
+      defaultMeta: { service: process.env.API_TITLE },
       transports: [
         // Write only error level logs to 'error.log'
         new winston.transports.File({
