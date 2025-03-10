@@ -6,7 +6,9 @@ const createValidator =
   (requestField: 'body' | 'query' | 'params') => (schema: AnyZodObject) => {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
-        await schema.parseAsync(req[requestField]);
+        const parsedData = await schema.parseAsync(req[requestField]);
+        // Save parsed data back to request field
+        req[requestField] = parsedData;
         next();
       } catch (error) {
         if (error instanceof ZodError) {

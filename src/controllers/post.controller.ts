@@ -30,7 +30,11 @@ export class PostController {
 
   getPosts = async (req: Request, res: Response) => {
     const authorId = req.query.authorId?.toString();
-    const posts = await this.postService.getPosts(authorId);
+    const posts = await this.postService.getPosts({
+      authorId,
+      page: req.query.page ? Number(req.query.page) : undefined,
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
+    });
     res.json(posts);
   };
 

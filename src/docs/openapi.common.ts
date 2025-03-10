@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { errorResponseSchema } from '../schemas/error.schema';
+import { paginationInfoSchema } from '../schemas/pagination.schema';
 
 export const commonOpenApiNodes = {
   badRequestResponse: {
@@ -31,7 +32,7 @@ export const commonOpenApiNodes = {
       id: z.string().uuid(),
     }),
   },
-  requestWithJsonBody: (schema: z.ZodSchema) => ({
+  requestWithJsonBody: <T extends z.ZodSchema>(schema: T) => ({
     body: {
       content: {
         'application/json': {
@@ -40,11 +41,28 @@ export const commonOpenApiNodes = {
       },
     },
   }),
-  jsonResponse: (schema: z.ZodSchema, description: string) => ({
+  requestWithQueryParams: <T extends z.ZodSchema>(schema: T) => ({
+    query: schema,
+  }),
+  jsonResponse: <T extends z.ZodSchema>(schema: T, description: string) => ({
     description,
     content: {
       'application/json': {
         schema,
+      },
+    },
+  }),
+  paginatedJsonResponse: <T extends z.ZodSchema>(
+    entitySchema: T,
+    description: string
+  ) => ({
+    description,
+    content: {
+      'application/json': {
+        schema: z.object({
+          data: z.array(entitySchema),
+          ...paginationInfoSchema.shape,
+        }),
       },
     },
   }),

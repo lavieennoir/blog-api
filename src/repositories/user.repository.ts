@@ -1,4 +1,4 @@
-import { PrismaClient, User } from '@prisma/client';
+import { Prisma, PrismaClient, User } from '@prisma/client';
 import { inject, injectable } from 'tsyringe';
 import { BaseRepository } from './base.repository';
 
@@ -8,11 +8,7 @@ export class UserRepository extends BaseRepository {
     super(prisma);
   }
 
-  async create(data: {
-    email: string;
-    name: string;
-    password: string;
-  }): Promise<User> {
+  async create(data: Prisma.UserCreateInput): Promise<User> {
     return this.getPrisma().user.create({
       data,
     });

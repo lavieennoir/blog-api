@@ -1,6 +1,11 @@
-import { Post, PrismaClient } from '@prisma/client';
+import { Post, PrismaClient, Prisma } from '@prisma/client';
 import { inject, injectable } from 'tsyringe';
 import { BaseRepository } from './base.repository';
+import {
+  CreatePostInput,
+  PostResponse,
+  UpdatePostInput,
+} from '../schemas/post.schema';
 
 @injectable()
 export class PostRepository extends BaseRepository {
@@ -24,14 +29,7 @@ export class PostRepository extends BaseRepository {
     super(prisma);
   }
 
-  // TODO: refactor interfaces
-  async create(data: {
-    title: string;
-    content: string;
-    published?: boolean;
-    authorId: string;
-    tags?: string[];
-  }): Promise<Post> {
+  async create(data: CreatePostInput & Pick<Post, 'authorId'>): Promise<Post> {
     const { tags = [], authorId, ...postData } = data;
 
     return this.getPrisma().post.create({
@@ -51,15 +49,7 @@ export class PostRepository extends BaseRepository {
     });
   }
 
-  async update(
-    id: string,
-    data: {
-      title?: string;
-      content?: string;
-      published?: boolean;
-      tags?: string[];
-    }
-  ): Promise<Post> {
+  async update(id: string, data: UpdatePostInput): Promise<Post> {
     const { tags, ...postData } = data;
 
     return this.getPrisma().post.update({
@@ -92,9 +82,11 @@ export class PostRepository extends BaseRepository {
     });
   }
 
-  async findMany(params: { authorId?: string }): Promise<Post[]> {
+  async findMany(
+    findArgs: Omit<Prisma.PostFindManyArgs, 'include' | 'orderBy'>
+  ): Promise<Post[]> {
     return this.getPrisma().post.findMany({
-      where: params.authorId ? { authorId: params.authorId } : undefined,
+      ...findArgs,
       include: this.defaultInclude,
       orderBy: {
         createdAt: 'desc',
@@ -102,13 +94,11 @@ export class PostRepository extends BaseRepository {
     });
   }
 
-  async findByIdWithAuthorAndTags(id: string): Promise<
-    | (Post & {
-        author: { id: string; name: string; email: string };
-        tags: { id: string; name: string }[];
-      })
-    | null
-  > {
+  async count(params: { where: Prisma.PostWhereInput }): Promise<number> {
+    return this.getPrisma().post.count(params);
+  }
+
+  async findByIdWithAuthorAndTags(id: string): Promise<PostResponse | null> {
     return this.getPrisma().post.findUnique({
       where: { id },
       include: this.defaultInclude,

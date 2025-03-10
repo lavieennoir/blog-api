@@ -1,7 +1,12 @@
 import { inject, injectable } from 'tsyringe';
-import { CreatePostInput, UpdatePostInput } from '../schemas/post.schema';
+import {
+  CreatePostInput,
+  GetPostsQuery,
+  UpdatePostInput,
+} from '../schemas/post.schema';
 import { PostRepository } from '../repositories/post.repository';
 import { AppError } from '../middleware/error.middleware';
+import { getPaginationParams } from '../utils/pagination';
 
 @injectable()
 export class PostService {
@@ -42,8 +47,25 @@ export class PostService {
     return this.postRepository.delete(postId);
   }
 
-  async getPosts(authorId?: string) {
-    return this.postRepository.findMany({ authorId });
+  async getPosts({ authorId, ...params }: GetPostsQuery) {
+    const { page, limit, skip } = getPaginationParams(params);
+
+    const [posts, total] = await Promise.all([
+      this.postRepository.findMany({
+        skip,
+        take: limit,
+        where: {
+          authorId,
+        },
+      }),
+      this.postRepository.count({ where: { authorId } }),
+    ]);
+    return {
+      data: posts,
+      page,
+      limit,
+      total,
+    };
   }
 
   async getPostById(postId: string) {

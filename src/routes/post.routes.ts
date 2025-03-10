@@ -1,23 +1,30 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { PostController } from '../controllers/post.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { container } from '../config/di.config';
 import { openApiRegistry } from '../docs/openapi.registry';
 import {
   createPostSchema,
+  getPostsSchema,
   postSchema,
   updatePostSchema,
 } from '../schemas/post.schema';
 import { commonOpenApiNodes } from '../docs/openapi.common';
-import { validateBody } from '../middleware/validation.middleware';
+import {
+  validateBody,
+  validateQuery,
+} from '../middleware/validation.middleware';
 import { handleExceptions } from '../utils/controller-error.utils';
 
 export const router = Router();
 const postController = container.resolve(PostController);
 
 // Register routes
-router.get('/', handleExceptions(postController.getPosts));
+router.get(
+  '/',
+  validateQuery(getPostsSchema),
+  handleExceptions(postController.getPosts)
+);
 router.get('/:id', handleExceptions(postController.getPost));
 router.post(
   '/',
@@ -44,8 +51,9 @@ openApiRegistry.registerPath({
   method: 'get',
   path: basePath,
   description: 'Get all posts',
+  request: commonOpenApiNodes.requestWithQueryParams(getPostsSchema),
   responses: {
-    200: commonOpenApiNodes.jsonResponse(z.array(postSchema), 'List of posts'),
+    200: commonOpenApiNodes.paginatedJsonResponse(postSchema, 'List of posts'),
   },
 });
 
