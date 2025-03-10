@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
 import { container } from './config/di.config';
 import userRoutes from './routes/user.routes';
@@ -15,6 +16,15 @@ dotenv.config();
 
 const app = express();
 
+// Security middleware
+app.use(
+  helmet({
+    // Disable CSP when docs are enabled to allow Swagger UI to work
+    contentSecurityPolicy: process.env.ENABLE_DOCS !== 'true',
+  })
+);
+
+// Basic middleware
 app.use(cors());
 app.use(express.json());
 
