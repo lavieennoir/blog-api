@@ -2,6 +2,8 @@
 
 A robust RESTful API for blog management system built with Express.js, TypeScript, and Prisma.
 
+_Available at [blog-api.ttools.xyz](https://blog-api.ttools.xyz/v1/docs)_
+
 ## 🚀 Features
 
 - User authentication and authorization
